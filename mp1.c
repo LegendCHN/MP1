@@ -5,6 +5,7 @@
 #include "mp1_given.h"
 
 #include <linux/fs.h>
+#include <linux/proc_fs.h>
 // #include <linux/spinlock.h>
 // #include <linux/list.h>
 #include <linux/slab.h>

@@ -25,4 +25,10 @@ int get_cpu_use(int pid, unsigned long *cpu_use)
    }
 }
 
+//
+static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, loff_t *data);
+//
+static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t count, loff_t *data);
+
+
 #endif
