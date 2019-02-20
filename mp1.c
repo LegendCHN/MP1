@@ -4,6 +4,13 @@
 #include <linux/kernel.h>
 #include "mp1_given.h"
 
+#include <linux/fs.h>
+// #include <linux/spinlock.h>
+// #include <linux/list.h>
+#include <linux/slab.h>
+// #include <linux/timer.h>
+// #include <linux/workqueue.h>
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Group_ID");
 MODULE_DESCRIPTION("CS-423 MP1");
@@ -17,6 +24,7 @@ static const struct file_operations mp1_file = {
 .read = mp1_read,
 .write = mp1_write,
 };
+
 static struct proc_dir_entry *proc_dir;
 static struct proc_dir_entry *proc_entry;
 
