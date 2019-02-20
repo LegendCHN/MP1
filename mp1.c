@@ -16,8 +16,7 @@ int __init mp1_init(void)
    #ifdef DEBUG
    printk(KERN_ALERT "MP1 MODULE LOADING\n");
    #endif
-   // Insert your code here ...
-   
+   // Insert your code here ...   
    
    
    printk(KERN_ALERT "MP1 MODULE LOADED\n");
@@ -40,3 +39,4 @@ void __exit mp1_exit(void)
 // Register init and exit funtions
 module_init(mp1_init);
 module_exit(mp1_exit);
+MODULE_LICENSE("GPL");
