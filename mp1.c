@@ -48,7 +48,7 @@ void free_linkedlist(void){
 }
 
 // callback function to push worker to workqueue
-void update_time(void){
+void update_time(unsigned long data){
    worker = (struct work_struct*)kmalloc(sizeof(struct work_struct), GFP_KERNEL);
    INIT_WORK(worker, workfunc);
    queue_work(workqueue, worker);
