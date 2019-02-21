@@ -18,6 +18,6 @@ int main(int argc, char* argv[])
     time_t s = time(NULL);
     for(int i=0; i<100000; i++)
     	factorial(500000);
-    printf("used %d", s-time(NULL))
+    printf("used %d", s-time(NULL));
 	return 0;
 }
