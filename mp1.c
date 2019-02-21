@@ -39,14 +39,14 @@ void free_linkedlist(void){
    list_for_each_safe(pos, q, &reglist.list){
        tmp= list_entry(pos, struct linkedlist, list);
        list_del(pos);
-       free(tmp);
+       kfree(tmp);
    }
 }
 
 static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, loff_t *data){
    int copied;
    copied = 0;
-   int  length;
+   int length;
    char * buf;
    buf = (char *) kmalloc(count, GFP_KERNEL);
 
@@ -67,7 +67,7 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
 }
 
 static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t count, loff_t *data){
-   tmp = (pid_time_list*)kmalloc(sizeof(struct pid_time_List), GFP_KERNEL);
+   tmp = (struct linkedlist*)kmalloc(sizeof(struct linkedlist), GFP_KERNEL);
    char buf[100];
    copy_from_user(buf, buffer, count);
    sscanf(buf, "%d", &tmp->pid);
