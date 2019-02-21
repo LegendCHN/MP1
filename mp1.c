@@ -7,7 +7,7 @@
 // #include <linux/fs.h>
 #include <linux/proc_fs.h>
 #include <linux/uaccess.h>
-#include <pthread.h> 
+#include <linux/pthread.h> 
 // #include <linux/spinlock.h>
 // #include <linux/list.h>
 #include <linux/slab.h>
