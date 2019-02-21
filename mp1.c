@@ -10,8 +10,9 @@
 #include <linux/mutex.h> 
 // #include <linux/list.h>
 #include <linux/slab.h>
-// #include <linux/timer.h>
-// #include <linux/workqueue.h>
+#include <linux/timer.h>
+#include <linux/workqueue.h>
+#include <linux/jiffies.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Group_ID");
@@ -21,19 +22,22 @@ MODULE_DESCRIPTION("CS-423 MP1");
 #define DIRECTORY "mp1"
 #define DEBUG 1
 #define MASK 0666
+#define TIMELIMIT 5000
 
 static const struct file_operations mp1_file = {
-.owner = THIS_MODULE,
-.read = mp1_read,
-.write = mp1_write,
+   .owner = THIS_MODULE,
+   .read = mp1_read,
+   .write = mp1_write,
 };
 
 static struct proc_dir_entry *proc_dir;
 static struct proc_dir_entry *proc_entry;
-struct linkedlist reglist;
-struct linkedlist *tmp;
-struct list_head *pos, *q;
-struct mutex lock;
+static struct linkedlist reglist;
+static struct linkedlist *tmp;
+static struct list_head *pos, *q;
+static struct mutex lock;
+static struct timer_list timer;
+static struct workqueue_struct *workqueue;
 
 void free_linkedlist(void){
    list_for_each_safe(pos, q, &reglist.list){
@@ -41,6 +45,33 @@ void free_linkedlist(void){
        list_del(pos);
        kfree(tmp);
    }
+}
+
+// callback function to push worker to workqueue
+void update_time(void){
+   worker = (struct work_struct*)kmalloc(sizeof(struct work_struct), GFP_KERNEL);
+   INIT_WORK(worker, workfunc);
+   queue_work(workqueue, worker);
+   mod_timer(&timer, jiffies + msecs_to_jiffies(TIMELIMIT));
+}
+
+void workfunc(struct work_struct *worker){
+   int ret;
+   mutex_lock(&lock);
+
+   list_for_each_safe(pos, q, &reglist.list) {
+      tmp = list_entry(pos, struct linkedlist, list);
+      ret = get_cpu_use(tmp->pid, &tmp->cpu_time);
+      if (ret != -1){
+         tmp->cpu_time = jiffies_to_msecs(cputime_to_jiffies(tmp->cpu_time));
+      }
+      else{
+         list_del(pos);
+         kfree(tmp);
+      }
+   }
+   mutex_unlock(&lock);
+   kfree(worker);
 }
 
 static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, loff_t *data){
@@ -82,11 +113,19 @@ int __init mp1_init(void)
    #ifdef DEBUG
    printk(KERN_ALERT "MP1 MODULE LOADING\n");
    #endif
-   // Insert your code here ...   
+   // create dir and file under /proc
    proc_dir = proc_mkdir(DIRECTORY, NULL);
    proc_entry = proc_create(FILENAME, MASK, proc_dir, & mp1_file);
+
+   // initialize linkedlist and mutex
    INIT_LIST_HEAD(&reglist.list);
    mutex_init(&lock);
+
+   // initialize timer
+   setup_timer(&timer, update_time, 0);
+   mod_timer(&timer, jiffies + msecs_to_jiffies(TIMELIMIT));
+   // initialize workqueue
+   workqueue = create_workqueue("workqueue")
 
    printk(KERN_ALERT "MP1 MODULE LOADED\n");
    return 0;   
@@ -98,9 +137,13 @@ void __exit mp1_exit(void)
    #ifdef DEBUG
    printk(KERN_ALERT "MP1 MODULE UNLOADING\n");
    #endif
+   flush_workqueue(workqueue);
+   destroy_workqueue(workqueue);
+   del_timer(&timer);
+
+   free_linkedlist();
    remove_proc_entry(FILENAME, proc_dir);
    remove_proc_entry(DIRECTORY, NULL);
-   free_linkedlist();
    printk(KERN_ALERT "MP1 MODULE UNLOADED\n");
 }
 
