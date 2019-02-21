@@ -9,7 +9,9 @@ RM:=rm
 
 all: clean modules app
 
+mynewname-objs := hello.o
 obj-m:= nwu10.o
+nwu10-objs:= mp1.o
 
 modules:
 	$(MAKE) -C $(KERNEL_SRC) M=$(SUBDIR) modules
