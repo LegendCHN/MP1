@@ -87,7 +87,7 @@ int __init mp1_init(void)
    proc_dir = proc_mkdir(DIRECTORY, NULL);
    proc_entry = proc_create(FILENAME, MASK, proc_dir, & mp1_file);
    INIT_LIST_HEAD(&reglist.list);
-   mutex_init(&my_mutex);
+   mutex_init(&lock);
 
    printk(KERN_ALERT "MP1 MODULE LOADED\n");
    return 0;   
