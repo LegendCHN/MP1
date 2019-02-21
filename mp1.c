@@ -125,7 +125,7 @@ int __init mp1_init(void)
    setup_timer(&timer, update_time, 0);
    mod_timer(&timer, jiffies + msecs_to_jiffies(TIMELIMIT));
    // initialize workqueue
-   workqueue = create_workqueue("workqueue")
+   workqueue = create_workqueue("workqueue");
 
    printk(KERN_ALERT "MP1 MODULE LOADED\n");
    return 0;   
