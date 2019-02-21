@@ -7,6 +7,7 @@
 // #include <linux/fs.h>
 #include <linux/proc_fs.h>
 #include <linux/uaccess.h>
+#include <pthread.h> 
 // #include <linux/spinlock.h>
 // #include <linux/list.h>
 #include <linux/slab.h>
@@ -35,8 +36,8 @@ struct linkedlist *tmp;
 struct list_head *pos, *q;
 static pthread_mutex_t lock;
 
-void free_linkedlist(){
-   list_for_each_safe(pos, q, &mylist.list){
+void free_linkedlist(void){
+   list_for_each_safe(pos, q, &reglist.list){
        tmp= list_entry(pos, struct linkedlist, list);
        list_del(pos);
        free(tmp);

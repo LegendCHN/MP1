@@ -36,5 +36,5 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
 
 static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t count, loff_t *data);
 
-void free_linkedlist();
+void free_linkedlist(void);
 #endif
