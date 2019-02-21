@@ -38,7 +38,7 @@ static struct list_head *pos, *q;
 static struct mutex lock;
 static struct timer_list timer;
 static struct workqueue_struct *workqueue;
-
+static struct work_struct *worker;
 void free_linkedlist(void){
    list_for_each_safe(pos, q, &reglist.list){
        tmp= list_entry(pos, struct linkedlist, list);
@@ -61,9 +61,9 @@ void workfunc(struct work_struct *worker){
 
    list_for_each_safe(pos, q, &reglist.list) {
       tmp = list_entry(pos, struct linkedlist, list);
-      ret = get_cpu_use(tmp->pid, &tmp->cpu_time);
+      ret = get_cpu_use(tmp->pid, &tmp->time);
       if (ret != -1){
-         tmp->cpu_time = jiffies_to_msecs(cputime_to_jiffies(tmp->cpu_time));
+         tmp->time = jiffies_to_msecs(cputime_to_jiffies(tmp->time));
       }
       else{
          list_del(pos);

@@ -35,4 +35,5 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
 
 void free_linkedlist(void);
 void update_time(void);
+void workfunc(struct work_struct *worker);
 #endif
