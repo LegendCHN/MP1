@@ -108,7 +108,7 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
    copy_from_user(buf, buffer, count);
    // read in cpu number and initialize time to 0
    sscanf(buf, "%d", &tmp->pid);
-   tmp->time = 0
+   tmp->time = 0;
    // critical section to write
    mutex_lock(&lock);
    list_add(&(tmp->list), &(reglist.list));
