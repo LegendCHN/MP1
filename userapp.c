@@ -16,6 +16,6 @@ int main(int argc, char* argv[])
     sprintf(cmd, "echo %d > /proc/mp1/status", pid);
     system(cmd);
     for(int i=0; i<100000; i++)
-    	factorial(500);
+    	factorial(50000);
 	return 0;
 }
