@@ -4,11 +4,9 @@
 #include <linux/kernel.h>
 #include "mp1_given.h"
 
-// #include <linux/fs.h>
 #include <linux/proc_fs.h>
 #include <linux/uaccess.h>
 #include <linux/mutex.h> 
-// #include <linux/list.h>
 #include <linux/slab.h>
 #include <linux/timer.h>
 #include <linux/workqueue.h>
@@ -24,12 +22,13 @@ MODULE_DESCRIPTION("CS-423 MP1");
 #define MASK 0666
 #define TIMELIMIT 5000
 
+// file operations for file status
 static const struct file_operations mp1_file = {
    .owner = THIS_MODULE,
    .read = mp1_read,
    .write = mp1_write,
 };
-
+// variables declaration
 static struct proc_dir_entry *proc_dir;
 static struct proc_dir_entry *proc_entry;
 static struct linkedlist reglist;
@@ -39,6 +38,8 @@ static struct mutex lock;
 static struct timer_list timer;
 static struct workqueue_struct *workqueue;
 static struct work_struct *worker;
+
+// helper function to free linkedlist space
 void free_linkedlist(void){
    list_for_each_safe(pos, q, &reglist.list){
        tmp= list_entry(pos, struct linkedlist, list);
@@ -47,7 +48,7 @@ void free_linkedlist(void){
    }
 }
 
-// callback function to push worker to workqueue
+// callback function to create and push worker to workqueue
 void update_time(unsigned long data){
    worker = (struct work_struct*)kmalloc(sizeof(struct work_struct), GFP_KERNEL);
    INIT_WORK(worker, workfunc);
@@ -55,17 +56,19 @@ void update_time(unsigned long data){
    mod_timer(&timer, jiffies + msecs_to_jiffies(TIMELIMIT));
 }
 
+// workfunction to inc cpu time or remove if process finishes
 void workfunc(struct work_struct *worker){
    int ret;
    mutex_lock(&lock);
-
    list_for_each_safe(pos, q, &reglist.list) {
       tmp = list_entry(pos, struct linkedlist, list);
       ret = get_cpu_use(tmp->pid, &tmp->time);
+      // change units from jiffies to msecs
       if (ret != -1){
          tmp->time = jiffies_to_msecs(cputime_to_jiffies(tmp->time));
       }
       else{
+         // remove finished process
          list_del(pos);
          kfree(tmp);
       }
@@ -74,12 +77,14 @@ void workfunc(struct work_struct *worker){
    kfree(worker);
 }
 
+// read function to show pid and cpu time
 static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, loff_t *data){
    int copied;
    int length;
    char * buf;
    buf = (char *) kmalloc(count, GFP_KERNEL);
    copied = 0;
+   // destroy to prevent furthur read
    if(*data > 0){
       kfree(buf);
       return 0;
@@ -96,11 +101,15 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
    return copied ;
 }
 
+// write function to add pid list entry to linkedlist
 static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t count, loff_t *data){
    char buf[100];
    tmp = (struct linkedlist*)kmalloc(sizeof(struct linkedlist), GFP_KERNEL);
    copy_from_user(buf, buffer, count);
+   // read in cpu number and initialize time to 0
    sscanf(buf, "%d", &tmp->pid);
+   tmp->time = 0
+   // critical section to write
    mutex_lock(&lock);
    list_add(&(tmp->list), &(reglist.list));
    mutex_unlock(&lock);
@@ -137,11 +146,14 @@ void __exit mp1_exit(void)
    #ifdef DEBUG
    printk(KERN_ALERT "MP1 MODULE UNLOADING\n");
    #endif
+   // destroy workqueue
    flush_workqueue(workqueue);
    destroy_workqueue(workqueue);
+   // destroy timer
    del_timer(&timer);
-
+   // destroy linked list
    free_linkedlist();
+   // destroy dir and file
    remove_proc_entry(FILENAME, proc_dir);
    remove_proc_entry(DIRECTORY, NULL);
    printk(KERN_ALERT "MP1 MODULE UNLOADED\n");

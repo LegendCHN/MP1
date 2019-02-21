@@ -15,7 +15,9 @@ int main(int argc, char* argv[])
     char cmd[100];
     sprintf(cmd, "echo %d > /proc/mp1/status", pid);
     system(cmd);
+    time_t s = time(NULL);
     for(int i=0; i<100000; i++)
-    	factorial(5000000);
+    	factorial(500000);
+    printf("used %d", s-time(NULL))
 	return 0;
 }
