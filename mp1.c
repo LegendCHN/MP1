@@ -7,8 +7,7 @@
 // #include <linux/fs.h>
 #include <linux/proc_fs.h>
 #include <linux/uaccess.h>
-#include <linux/pthread.h> 
-// #include <linux/spinlock.h>
+#include <linux/mutex.h> 
 // #include <linux/list.h>
 #include <linux/slab.h>
 // #include <linux/timer.h>
@@ -34,7 +33,7 @@ static struct proc_dir_entry *proc_entry;
 struct linkedlist reglist;
 struct linkedlist *tmp;
 struct list_head *pos, *q;
-static pthread_mutex_t lock;
+struct mutex lock;
 
 void free_linkedlist(void){
    list_for_each_safe(pos, q, &reglist.list){
@@ -72,9 +71,9 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
    char buf[100];
    copy_from_user(buf, buffer, count);
    sscanf(buf, "%d", &tmp->pid);
-   pthread_mutex_lock(&lock);
+   mutex_lock(&lock);
    list_add(&(tmp->list), &(reglist.list));
-   pthread_mutex_unlock(&lock);
+   mutex_unlock(&lock);
    return count;
 }
 
@@ -88,8 +87,8 @@ int __init mp1_init(void)
    proc_dir = proc_mkdir(DIRECTORY, NULL);
    proc_entry = proc_create(FILENAME, MASK, proc_dir, & mp1_file);
    INIT_LIST_HEAD(&reglist.list);
+   mutex_init(&my_mutex);
 
-   pthread_mutex_init(&lock, NULL);
    printk(KERN_ALERT "MP1 MODULE LOADED\n");
    return 0;   
 }
@@ -103,7 +102,6 @@ void __exit mp1_exit(void)
    remove_proc_entry(FILENAME, proc_dir);
    remove_proc_entry(DIRECTORY, NULL);
    free_linkedlist();
-   pthread_mutex_destroy(&lock);
    printk(KERN_ALERT "MP1 MODULE UNLOADED\n");
 }
 
